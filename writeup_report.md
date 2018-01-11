@@ -97,11 +97,11 @@ And I got **10.79 seconds of training time and accuracy of 0.9899.** I chose thi
 
 #### 3. Train a classifier using selected features.
 
-As stated in the previous point, I trained a linear SVM and got 0.9899 accuracy. The code is as follows:
+In the previous submission, I trained a linear SVM with C=1 and got 0.9899 accuracy. **This time, for better accuracy, I tried C values of 0.01 and 0.001, finally settled with C=0.001 and got test accuracy of 99.33%** The code is as follows:
 
 ```python
 # Use a linear SVC 
-svc = LinearSVC()
+svc = LinearSVC(C=0.001)
 # Check the training time for the SVC
 t=time.time()
 svc.fit(X_train, y_train)
@@ -163,7 +163,7 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 
 #### 1. The link to my final video output.  The entire pipeline performs reasonably well on the entire project video.
 
-Here's a [link to my video result](https://youtu.be/BbHzG2za7WA). It can also be found as project_video_out.mp4 in my repo.
+Here's a [link to my video result](https://youtu.be/R4UicmlEI58). It can also be found as project_video_out.mp4 in my repo.
 
 
 #### 2. I implemented heat threshold filter for false positives and `scipy.ndimage.measurements.label()` method for combining overlapping bounding boxes. However, this was not enough for processing video. I also implemented a Heat-Map buffer filter that takes into account history of Heat Maps of 3 consecutive video frames.
@@ -216,7 +216,7 @@ Here's an example result showing the detected positive bounding boxes and corres
 ### Here the resulting heat map and bounding boxes that are drawn onto the original image:
 ![alt text][image14]
 
-### To successfully get rid of false positives in the video, I also implemented an algorithm to accumulate 3 consecutive frames and apply threshold on the sum of heat maps of the 3 latest video frames. I also tuned the threshold again for this feature.
+### To successfully get rid of false positives in the video, previousely I implemented an algorithm to accumulate 3 consecutive frames and apply threshold on the average of sum of heat maps of the 3 latest video frames. For this new submission, I tested different length of buffer and finally chose 7 frames. I also tuned the threshold again for this feature, and settled with 2.7.
 
 The code is at the end of my pipeline:
 
@@ -235,13 +235,13 @@ and:
     heat = np.zeros_like(img[:,:,0])
     heat = add_heat(heat, rectangles)
     
-    if len(history.history) >= 3:
+    if len(history.history) >= 7:
         history.history = history.history[1:]
     
     history.history.append(heat)
-    heat_history = reduce(lambda h, acc: h + acc, history.history)/3
+    heat_history = reduce(lambda h, acc: h + acc, history.history)/7
     
-    heat = apply_threshold(heat_history, 4)
+    heat = apply_threshold(heat_history, 2.7)
      
     labels = label(heat)
     draw_img = draw_labeled_bboxes(np.copy(img), labels)
